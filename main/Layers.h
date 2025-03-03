@@ -1,12 +1,16 @@
 #ifndef LAYERS_H
 #define LAYERS_H
 
-enum class ActivationType {
-  SIGMOID
+enum ActivationKind {
+  Sigmoid,
+  Relu,
+  Softmax,
+  TanH,
+  LeakyRelu,
 };
 
-float Sigmoid(float x);
-float SigmoidDeriv(float x);
+float Activation(float x);
+float ActivationDeriv(float x);
 
 void FillRandom(float* array, int size);
 
@@ -19,7 +23,7 @@ public:
   int Size;
   BaseLayer* PreviousLayer;
   BaseLayer* NextLayer;
-  ActivationType ActivationFunction;
+  ActivationKind activationKind;
 
   BaseLayer();
   virtual ~BaseLayer();
@@ -32,7 +36,7 @@ public:
 
 class DenseLayer : public BaseLayer {
 public:
-  DenseLayer(int size);
+  DenseLayer(int size, ActivationKind kind);
   ~DenseLayer();
   void InitLayer(int size, BaseLayer* previous, BaseLayer* next) override;
   void FeedForward() override;
@@ -52,7 +56,7 @@ public:
 
 class OutputLayer : public BaseLayer {
 public:
-  OutputLayer(int size);
+  OutputLayer(int size, ActivationKind kind);
   ~OutputLayer();
   void InitLayer(int size, BaseLayer* previous, BaseLayer* next) override;
   void FeedForward() override;

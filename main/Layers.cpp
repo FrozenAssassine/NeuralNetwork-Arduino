@@ -1,12 +1,41 @@
 #include "Layers.h"
 #include "Arduino.h"
 
-float Sigmoid(float x) {
-  return 1.0f / (1.0f + exp(-x));
+
+float Activation(float value, ActivationKind activationKind) {
+    switch (activationKind) {
+        case ActivationKind::Sigmoid:
+            return 1.0 / (1.0 + exp(-value));
+        case ActivationKind::Relu:
+            return value > 0 ? value : 0;
+        case ActivationKind::Softmax:
+            return exp(value) / (1.0 + exp(value));
+        case ActivationKind::TanH:
+            return tanh(value);
+        case ActivationKind::LeakyRelu:
+            return value > 0 ? value : 0.01 * value;
+        default: 
+          Serial.println("Invalid Activation Index");
+          return value;
+    }
 }
 
-float SigmoidDeriv(float x) {
-  return x * (1 - x);
+float ActivationDeriv(float value, ActivationKind activationKind) {
+    switch (activationKind) {
+        case ActivationKind::Sigmoid:
+            return value * (1.0 - value);
+        case ActivationKind::Relu:
+            return value > 0 ? 1.0 : 0.0;
+        case ActivationKind::Softmax:
+          return value * (1.0-value);
+        case ActivationKind::TanH:
+            return 1.0 - value * value;
+        case ActivationKind::LeakyRelu:
+            return value > 0 ? 1.0 : 0.010;
+        default:
+          Serial.println("Invalid Activation Index");
+          return value;
+    }
 }
 
 void FillRandom(float* array, int size) {
@@ -28,9 +57,10 @@ BaseLayer::~BaseLayer() {
 }
 
 ///DENSE LAYER
-DenseLayer::DenseLayer(int size)
+DenseLayer::DenseLayer(int size, ActivationKind activationKind)
   : BaseLayer() {
   this->Size = size;
+  this->activationKind = activationKind;
 }
 DenseLayer::~DenseLayer() {}
 void DenseLayer::InitLayer(int size, BaseLayer* previous, BaseLayer* next) {
@@ -52,7 +82,7 @@ void DenseLayer::FeedForward() {
     for (int j = 0; j < this->PreviousLayer->Size; j++) {
       sum += this->PreviousLayer->NeuronValues[j] * this->Weights[index + j];
     }
-    this->NeuronValues[idx] = Sigmoid(sum + this->Biases[idx]);
+    this->NeuronValues[idx] = Activation(sum + this->Biases[idx], this->activationKind);
   }
 }
 void DenseLayer::Train(const float* desiredValues, float learningRate) {
@@ -63,7 +93,7 @@ void DenseLayer::Train(const float* desiredValues, float learningRate) {
     for (int j = 0; j < this->NextLayer->Size; j++) {
       err += (this->NextLayer->Errors[j] * this->NextLayer->Weights[j * this->Size + idx]);
     }
-    float error = err * SigmoidDeriv(this->NeuronValues[idx]);
+    float error = err * ActivationDeriv(this->NeuronValues[idx], this->activationKind);
     this->Errors[idx] = error;
 
     error *= learningRate;
@@ -80,6 +110,7 @@ void DenseLayer::Train(const float* desiredValues, float learningRate) {
 InputLayer::InputLayer(int size)
   : BaseLayer() {
   this->Size = size;
+  this->activationKind = activationKind;
 }
 InputLayer::~InputLayer() {}
 void InputLayer::InitLayer(int size, BaseLayer* previous, BaseLayer* next) {
@@ -93,9 +124,10 @@ void InputLayer::Train(const float* desiredValues, float learningRate) {}
 
 
 //OUTPUT LAYER
-OutputLayer::OutputLayer(int size)
+OutputLayer::OutputLayer(int size, ActivationKind activationKind)
   : BaseLayer() {
   this->Size = size;
+  this->activationKind = activationKind;
 }
 OutputLayer::~OutputLayer() {}
 void OutputLayer::InitLayer(int size, BaseLayer* previous, BaseLayer* next) {
@@ -118,7 +150,7 @@ void OutputLayer::FeedForward() {
     for (int j = 0; j < this->PreviousLayer->Size; j++) {
       sum += this->PreviousLayer->NeuronValues[j] * this->Weights[weightIndex + j];
     }
-    this->NeuronValues[idx] = Sigmoid(sum + this->Biases[idx]);
+    this->NeuronValues[idx] = Activation(sum + this->Biases[idx], this->activationKind);
   }
 }
 void OutputLayer::Train(const float* desiredValues, float learningRate) {
@@ -127,13 +159,13 @@ void OutputLayer::Train(const float* desiredValues, float learningRate) {
   }
 
   for (int idx = 0; idx < this->Size; idx++) {
-    float derivNeuronVal = learningRate * this->Errors[idx] * SigmoidDeriv(this->NeuronValues[idx]);
+    float derivNeuronVal = learningRate * this->Errors[idx] * ActivationDeriv(this->NeuronValues[idx], this->activationKind);
     int weightIndex = idx * this->PreviousLayer->Size;
 
     for (int j = 0; j < this->PreviousLayer->Size; j++) {
       this->Weights[weightIndex + j] += derivNeuronVal * this->PreviousLayer->NeuronValues[j];
     }
 
-    this->Biases[idx] += learningRate * this->Errors[idx] * SigmoidDeriv(this->NeuronValues[idx]);
+    this->Biases[idx] += learningRate * this->Errors[idx] * ActivationDeriv(this->NeuronValues[idx], this->activationKind);
   }
 }
