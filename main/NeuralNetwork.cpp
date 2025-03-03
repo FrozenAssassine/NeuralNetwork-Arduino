@@ -69,7 +69,7 @@ void NeuralNetwork::Train(float* inputs, float* desired, int totalItems, int inp
       }
     }
 
-    if (epoch % 100 == 0) {
+    if (epoch % (epochs / 100 > 10 ? epochs / 100 : 1) == 0) {
       Serial.print("Epoch ");
       Serial.println(epoch);
     }

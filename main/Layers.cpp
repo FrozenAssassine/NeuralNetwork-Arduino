@@ -153,6 +153,7 @@ void OutputLayer::FeedForward() {
     this->NeuronValues[idx] = Activation(sum + this->Biases[idx], this->activationKind);
   }
 }
+
 void OutputLayer::Train(const float* desiredValues, float learningRate) {
   for (int idx = 0; idx < this->Size; idx++) {
     this->Errors[idx] = desiredValues[idx] - this->NeuronValues[idx];
