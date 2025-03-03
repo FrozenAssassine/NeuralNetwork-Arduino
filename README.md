@@ -12,7 +12,7 @@
 
 ## 🤔 What is this project?
 
-This project is a lightweight neural network implementation designed to run on microcontrollers like the **ESP32** and **Arduino**. It demonstrates how even resource-constrained devices can train and perform simple tasks like **XOR** prediction.
+This project is a lightweight neural network implementation designed to run on microcontrollers like the **ESP32** and **Arduino**. It demonstrates how even resource-constrained devices can train and perform simple tasks like **XOR** prediction. Maybe you’ll find a use case for simple robot projects.
 
 While it takes just some **seconds** to train on the ESP32, the Arduino requires significantly more time due to limited processing power.
 
@@ -21,14 +21,13 @@ While it takes just some **seconds** to train on the ESP32, the Arduino requires
 ## 🛠️ Features
 - **On-device training**: Train your neural network directly on ESP32 or Arduino.
 - **XOR**: Predict simple numbers like in xor.
+- **Activation Functions**: Use activation functions like Sigmoid, Relu, Softmax, TanH and LeakyRelu
 - **Fast Training**: The ESP32 can train in just a few seconds, while the Arduino requires longer due to its slow processor.
 
 ## 🔮 Future features
 - Train on PC and load weights to chip
 - Save and load weights
 - More layer types
-- Simple performance optimizations
-- Use multiple threads on esp32
 
 ## 🚀 Performance
 - ESP32: Fast training (~seconds).
@@ -40,8 +39,8 @@ For the individual layers, I used the basic principle of inheritance, where I ha
 
 ## 🏗️ How to Use
 
-1. Clone this repository and open the project in your preferred environment for ESP32 or Arduino.
-2. Upload the code to your ESP32 or Arduino using the Arduino IDE or another compatible tool.
+1. Clone this repository and open the project in Arduino IDE.
+2. Upload the code to your ESP32 or Arduino using Arduino IDE
 3. Monitor the predictions via Serial Monitor at 115200 baud rate.
 
 Here is an example code:
@@ -55,14 +54,14 @@ void setup() {
 
   NeuralNetwork *nn = new NeuralNetwork(3);
   nn->StackLayer(new InputLayer(2));
-  nn->StackLayer(new DenseLayer(4));
-  nn->StackLayer(new OutputLayer(1));
+  nn->StackLayer(new DenseLayer(4, ActivationKind::TanH));
+  nn->StackLayer(new OutputLayer(1, ActivationKind::TanH));
   nn->Build();
 
   float inputs[4][2] = { { 0, 0 }, { 0, 1 }, { 1, 0 }, { 1, 1 } };
   float desired[4][1] = { { 0 }, { 1 }, { 1 }, { 0 } };
 
-  nn->Train((float*)inputs, (float*)desired, 4, 2, 10000, 0.05f);
+  nn->Train((float*)inputs, (float*)desired, 4, 2, 600, 0.1f);
 
   // Predict XOR results:
   for (int i = 0; i < 4; i++) {
@@ -82,5 +81,5 @@ void loop() {
 ```
 
 # 📷 Images:
-![image](https://github.com/user-attachments/assets/a84f9521-d4cc-482d-92d5-03c0d8f58a3d)
+![image](https://github.com/user-attachments/assets/4b32f9ee-a1e9-4b4f-b626-1c4d5d9a3861)
 
