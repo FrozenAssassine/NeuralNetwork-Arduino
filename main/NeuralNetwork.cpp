@@ -92,7 +92,7 @@ void NeuralNetwork::Train(float *inputs, float *desired, int totalItems, int inp
       lossCalc.Calculate(desired);
     }
 
-    if (epoch % (epochs / 100 > 10 ? epochs / 100 : 1) == 0)
+    if (epoch % max(epochs / 100, 1) == 0)
     {
       Serial.print("Epoch ");
       Serial.print(epoch);
