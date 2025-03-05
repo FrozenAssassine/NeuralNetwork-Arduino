@@ -55,7 +55,7 @@ void setup() {
   NeuralNetwork *nn = new NeuralNetwork(3);
   nn->StackLayer(new InputLayer(2));
   nn->StackLayer(new DenseLayer(4, ActivationKind::TanH));
-  nn->StackLayer(new OutputLayer(1, ActivationKind::TanH));
+  nn->StackLayer(new OutputLayer(1, ActivationKind::Sigmoid));
   nn->Build();
 
   float inputs[4][2] = { { 0, 0 }, { 0, 1 }, { 1, 0 }, { 1, 1 } };
