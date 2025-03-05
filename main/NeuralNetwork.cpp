@@ -32,15 +32,15 @@ void NeuralNetwork::Build()
   {
     if (i == 0)
     { // first layer (input)
-      allLayer[i]->InitLayer(allLayer[i]->Size, nullptr, allLayer[i + 1]);
+      allLayer[i]->InitLayer(this, allLayer[i]->Size, nullptr, allLayer[i + 1]);
     }
     else if (i == this->totalLayers - 1)
     { // output layer
-      allLayer[i]->InitLayer(allLayer[i]->Size, allLayer[i - 1], nullptr);
+      allLayer[i]->InitLayer(this, allLayer[i]->Size, allLayer[i - 1], nullptr);
     }
     else
     {
-      allLayer[i]->InitLayer(allLayer[i]->Size, allLayer[i - 1], allLayer[i + 1]);
+      allLayer[i]->InitLayer(this, allLayer[i]->Size, allLayer[i - 1], allLayer[i + 1]);
     }
   }
 }

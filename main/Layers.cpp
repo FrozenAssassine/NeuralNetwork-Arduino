@@ -1,4 +1,5 @@
 #include "Layers.h"
+#include "NeuralNetwork.h"
 #include "Arduino.h"
 
 
@@ -40,8 +41,15 @@ float ActivationDeriv(float value, ActivationKind activationKind) {
 
 void FillRandom(float* array, int size) {
   for (int i = 0; i < size; i++) {
-    float rand = (random(0, 32768) / 32768.0f) * 2 - 1;
+    float rand = (random(0, 32768) / 32768.0) * 2 - 1;
     array[i] = rand;
+  }
+}
+
+void XavierInitializeWeights(float * weights, int size, int fanIn, int fanOut){
+  float limit = sqrt(6.0 / (fanIn + fanOut));
+  for(int i = 0; i<size; i++){
+    weights[i] = random(0, 32768) / 32768.0 * (limit * 2) - limit;
   }
 }
 
@@ -63,7 +71,7 @@ DenseLayer::DenseLayer(int size, ActivationKind activationKind)
   this->activationKind = activationKind;
 }
 DenseLayer::~DenseLayer() {}
-void DenseLayer::InitLayer(int size, BaseLayer* previous, BaseLayer* next) {
+void DenseLayer::InitLayer(NeuralNetwork * nn, int size, BaseLayer* previous, BaseLayer* next) {
   this->Size = size;
   this->Biases = new float[size];
   this->NeuronValues = new float[size];
@@ -73,7 +81,8 @@ void DenseLayer::InitLayer(int size, BaseLayer* previous, BaseLayer* next) {
   this->NextLayer = next;
 
   FillRandom(this->Biases, size);
-  FillRandom(this->Weights, size * previous->Size);
+
+  XavierInitializeWeights(this->Weights, size * previous->Size, nn->allLayer[0]->Size, nn->allLayer[nn->totalLayers - 1]->Size);
 }
 void DenseLayer::FeedForward() {
   for (int idx = 0; idx < this->Size; idx++) {
@@ -113,7 +122,7 @@ InputLayer::InputLayer(int size)
   this->activationKind = activationKind;
 }
 InputLayer::~InputLayer() {}
-void InputLayer::InitLayer(int size, BaseLayer* previous, BaseLayer* next) {
+void InputLayer::InitLayer(NeuralNetwork * nn, int size, BaseLayer* previous, BaseLayer* next) {
   this->Size = size;
   this->NeuronValues = new float[size];
   this->PreviousLayer = previous;
@@ -130,7 +139,7 @@ OutputLayer::OutputLayer(int size, ActivationKind activationKind)
   this->activationKind = activationKind;
 }
 OutputLayer::~OutputLayer() {}
-void OutputLayer::InitLayer(int size, BaseLayer* previous, BaseLayer* next) {
+void OutputLayer::InitLayer(NeuralNetwork* nn, int size, BaseLayer* previous, BaseLayer* next) {
   this->Size = size;
   this->Biases = new float[size];
   this->NeuronValues = new float[size];
@@ -139,8 +148,9 @@ void OutputLayer::InitLayer(int size, BaseLayer* previous, BaseLayer* next) {
   this->PreviousLayer = previous;
   this->NextLayer = next;
 
+  XavierInitializeWeights(this->Weights, size * previous->Size, nn->allLayer[0]->Size, nn->allLayer[nn->totalLayers - 1]->Size);
+
   FillRandom(this->Biases, size);
-  FillRandom(this->Weights, size * previous->Size);
 }
 
 void OutputLayer::FeedForward() {
