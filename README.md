@@ -23,7 +23,7 @@ While it takes just some **seconds** to train on the ESP32, the Arduino requires
 - **XOR**: Predict simple numbers like in xor.
 - **Activation Functions**: Use activation functions like Sigmoid, Relu, Softmax, TanH and LeakyRelu
 - **Fast Training**: The ESP32 can train in just a few seconds, while the Arduino requires longer due to its slow processor.
-
+- **Xavier Initialization**: Optimizes weight distribution for faster training.
 ## 🔮 Future features
 - Train on PC and load weights to chip
 - Save and load weights
