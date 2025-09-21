@@ -8,8 +8,6 @@ float Activation(float value, ActivationKind activationKind) {
             return 1.0 / (1.0 + exp(-value));
         case ActivationKind::Relu:
             return value > 0 ? value : 0;
-        case ActivationKind::Softmax:
-            return exp(value) / (1.0 + exp(value));
         case ActivationKind::TanH:
             return tanh(value);
         case ActivationKind::LeakyRelu:
@@ -26,8 +24,6 @@ float ActivationDeriv(float value, ActivationKind activationKind) {
             return value * (1.0 - value);
         case ActivationKind::Relu:
             return value > 0 ? 1.0 : 0.0;
-        case ActivationKind::Softmax:
-          return value * (1.0-value);
         case ActivationKind::TanH:
             return 1.0 - value * value;
         case ActivationKind::LeakyRelu:
@@ -37,6 +33,27 @@ float ActivationDeriv(float value, ActivationKind activationKind) {
           return value;
     }
 }
+
+void ActivationSoftmax(float* values, int size) {
+  // For numerical stability, subtract max value first
+  float maxVal = values[0];
+  for (int i = 1; i < size; i++) {
+    if (values[i] > maxVal) maxVal = values[i];
+  }
+
+  // Exponentiate shifted values and sum
+  float sum = 0.0f;
+  for (int i = 0; i < size; i++) {
+    values[i] = exp(values[i] - maxVal);
+    sum += values[i];
+  }
+
+  // Normalize
+  for (int i = 0; i < size; i++) {
+    values[i] /= sum;
+  }
+}
+
 
 void FillRandom(float* array, int size) {
   for (int i = 0; i < size; i++) {
@@ -143,7 +160,28 @@ void OutputLayer::InitLayer(int size, BaseLayer* previous, BaseLayer* next) {
   FillRandom(this->Weights, size * previous->Size);
 }
 
+void OutputLayer::FeedForward_Softmax(){
+   for (int idx = 0; idx < this->Size; idx++) {
+      float sum = 0.0f;
+      int weightIndex = idx * this->PreviousLayer->Size;
+      for (int j = 0; j < this->PreviousLayer->Size; j++) {
+        sum += this->PreviousLayer->NeuronValues[j] * this->Weights[weightIndex + j];
+      }
+
+      this->NeuronValues[idx] = sum + this->Biases[idx];
+    }
+
+    ActivationSoftmax(this->NeuronValues, this->Size);
+}
+
 void OutputLayer::FeedForward() {
+  //handle softmax activation:
+  if (this->activationKind == Softmax) {
+    FeedForward_Softmax();
+    return;
+  }
+  
+  //handle other cases:
   for (int idx = 0; idx < this->Size; idx++) {
     float sum = 0.0f;
     int weightIndex = idx * this->PreviousLayer->Size;

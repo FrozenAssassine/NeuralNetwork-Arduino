@@ -61,6 +61,9 @@ public:
   void InitLayer(int size, BaseLayer* previous, BaseLayer* next) override;
   void FeedForward() override;
   void Train(const float* desiredValues, float learningRate) override;
+
+private:
+  void FeedForward_Softmax();
 };
 
 #endif
