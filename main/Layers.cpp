@@ -209,12 +209,22 @@ void OutputLayer::Train(const float* desiredValues, float learningRate) {
 
   for (int idx = 0; idx < this->Size; idx++) {
     float derivNeuronVal = learningRate * this->Errors[idx] * ActivationDeriv(this->NeuronValues[idx], this->activationKind);
-    int weightIndex = idx * this->PreviousLayer->Size;
 
+    float grad; 
+    if (this->activationKind == Sigmoid || this->activationKind == Softmax) {
+      //Crossentropy + sigmoid or softmax
+      grad = learningRate * this->Errors[idx];
+    } else {
+      // MSE + generic activation
+      grad = learningRate * this->Errors[idx] *
+             ActivationDeriv(this->NeuronValues[idx], this->activationKind);
+    }
+
+    int weightIndex = idx * this->PreviousLayer->Size;
     for (int j = 0; j < this->PreviousLayer->Size; j++) {
       this->Weights[weightIndex + j] += derivNeuronVal * this->PreviousLayer->NeuronValues[j];
     }
 
-    this->Biases[idx] += learningRate * this->Errors[idx] * ActivationDeriv(this->NeuronValues[idx], this->activationKind);
+    this->Biases[idx] += grad;
   }
 }
