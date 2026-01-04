@@ -111,12 +111,16 @@ Input: [1, 1] -> Softmax: [0.9355, 0.0645] -> Class: 0
 #include "nn/neuralNetwork.h"
 #include <nn/predictionHelper.h>
 #include <Arduino.h>
+#include "nn_trained.h" //your generated header file with weights and biases
 
 void InferenceOnly()
 {
   Serial.println("Testing model inference only (XOR Classification)");
 
   NeuralNetwork *nn = new NeuralNetwork(3);
+
+  nn->LoadTrainedData(nn_layers, nn_total_layers);
+
   nn->StackLayer(new InputLayer(2));
   nn->StackLayer(new DenseLayer(4, ActivationKind::TanH));
   nn->StackLayer(new OutputLayer(2, ActivationKind::Softmax));
