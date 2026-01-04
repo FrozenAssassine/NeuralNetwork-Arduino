@@ -1,6 +1,9 @@
+import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
+
+MODEL_OUTPUT = "out/xor_model_weights.pth"
 
 X = torch.tensor([
     [0, 0],
@@ -52,5 +55,7 @@ with torch.no_grad():
     for inp, out in zip(X, predictions):
         print(f"{inp.tolist()} -> {[round(item, 3) for item in out.tolist()]}")
 
-torch.save(model.state_dict(), "xor_model_weights.pth")
-print("Weights and biases saved to xor_model_weights.pth")
+os.makedirs(os.path.dirname(MODEL_OUTPUT), exist_ok=True)
+
+torch.save(model.state_dict(), MODEL_OUTPUT)
+print(f"Weights and biases saved to {MODEL_OUTPUT}")
