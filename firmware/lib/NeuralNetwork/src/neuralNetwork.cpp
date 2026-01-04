@@ -1,7 +1,6 @@
 #include "nn/lossCalculator.h"
 #include "nn/neuralNetwork.h"
 #include "Arduino.h"
-#include "nn/nn_trained.h"
 
 NeuralNetwork::NeuralNetwork(uint8_t totalLayers)
 {
@@ -33,23 +32,27 @@ NeuralNetwork &NeuralNetwork::StackLayer(BaseLayer *layer)
 
 void NeuralNetwork::initInferenceMode()
 {
-    if (nn_total_layers != this->totalLayers)
+    if (this->loadedModelLayers == nullptr || this->loadedModelLayerCount == 0)
     {
-        Serial.println("Error: Invalid model layer count");
-        exit(0);
-
+        Serial.println("Error: No trained model loaded. Call LoadTrainedData() before Build(true)");
         return;
     }
 
-    for (uint8_t i = 0; i < nn_total_layers; i++)
+    if (this->loadedModelLayerCount != this->totalLayers)
+    {
+        Serial.println("Error: Invalid model layer count");
+        return;
+    }
+
+    for (uint8_t i = 0; i < this->loadedModelLayerCount; i++)
     {
         BaseLayer *prev = (i == 0) ? nullptr : allLayer[i - 1];
         BaseLayer *next = (i == this->totalLayers - 1) ? nullptr : allLayer[i + 1];
 
-        if (nn_layers[i].outputSize != allLayer[i]->Size)
+        if (this->loadedModelLayers[i].outputSize != allLayer[i]->Size)
         {
             Serial.println("Error: Loaded model data does not fit on this model");
-            Serial.printf("Expected layersize %d received %d\n", allLayer[i]->Size, nn_layers[i].outputSize);
+            Serial.printf("Expected layersize %d received %d\n", allLayer[i]->Size, this->loadedModelLayers[i].outputSize);
             return;
         }
 
@@ -60,7 +63,7 @@ void NeuralNetwork::initInferenceMode()
             next,
             true);
 
-        allLayer[i]->LoadData(nn_layers[i].weights, nn_layers[i].bias);
+        allLayer[i]->LoadData(this->loadedModelLayers[i].weights, this->loadedModelLayers[i].bias);
     }
 }
 
@@ -144,4 +147,30 @@ void NeuralNetwork::Train(float *inputs, float *desired, uint16_t totalItems, ui
     }
 
     Serial.println("Training Done!");
+}
+
+bool NeuralNetwork::LoadTrainedData(const LayerData *layers, uint8_t layerCount)
+{
+    if (layers == nullptr || layerCount == 0)
+        return false;
+
+    if (layerCount != this->totalLayers)
+    {
+        Serial.println("Error: Provided model layer count does not match network configuration.");
+        return false;
+    }
+
+    // Basic validation of layer sizes
+    for (uint8_t i = 0; i < layerCount; i++)
+    {
+        if (layers[i].outputSize != this->allLayer[i]->Size)
+        {
+            Serial.println("Error: Provided model layer sizes do not match network layers.");
+            return false;
+        }
+    }
+
+    this->loadedModelLayers = layers;
+    this->loadedModelLayerCount = layerCount;
+    return true;
 }

@@ -2,6 +2,7 @@
 #include <nn/layers.h>
 #include <nn/neuralNetwork.h>
 #include <nn/predictionHelper.h>
+#include "nn_trained.h"
 
 void TrainAndTest()
 {
@@ -44,6 +45,9 @@ void InferenceOnly()
   Serial.println("Testing model inference only (XOR Classification)");
 
   NeuralNetwork *nn = new NeuralNetwork(3);
+
+  nn->LoadTrainedData(nn_layers, nn_total_layers);
+
   nn->StackLayer(new InputLayer(2));
   nn->StackLayer(new DenseLayer(4, ActivationKind::TanH));
   nn->StackLayer(new OutputLayer(2, ActivationKind::Softmax));

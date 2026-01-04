@@ -2,6 +2,7 @@
 #define NEURAL_NETWORK_H
 
 #include "layers.h"
+#include "layerData.h"
 
 class NeuralNetwork
 {
@@ -9,6 +10,8 @@ private:
     void TrainSingle(float *input, float *desired, uint16_t inputLength, float learningRate);
     void initTrainingMode();
     void initInferenceMode();
+    const LayerData *loadedModelLayers = nullptr;
+    uint8_t loadedModelLayerCount = 0;
 
 public:
     BaseLayer **allLayer;
@@ -20,6 +23,7 @@ public:
     NeuralNetwork &StackLayer(BaseLayer *layer);
     void Build(bool inferenceOnly);
     float *Predict(float *inputs, uint16_t inputLength);
+    bool LoadTrainedData(const LayerData *layers, uint8_t layerCount);
 };
 
 #endif
