@@ -1,0 +1,26 @@
+{
+    "name": "NeuralNetwork",
+    "version": "1.2.0",
+    "authors": [
+        {
+            "name": "Julius Kirsch"
+        }
+    ],
+    "license": "MIT",
+    "frameworks": [
+        "arduino"
+    ],
+    "platforms": [
+        "espressif8266",
+        "espressif32",
+        "atmelavr"
+    ],
+    "keywords": [
+        "neuralnetwork",
+        "esp32",
+        "arduino",
+        "ml",
+        "nn",
+        "machinelearning"
+    ]
+}

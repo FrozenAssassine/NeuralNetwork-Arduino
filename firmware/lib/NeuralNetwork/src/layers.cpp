@@ -44,7 +44,6 @@ float ActivationDeriv(float value, ActivationKind activationKind)
 
 void ActivationSoftmax(float *values, uint16_t size)
 {
-    // For numerical stability, subtract max value first
     float maxVal = values[0];
     for (uint16_t i = 1; i < size; i++)
     {
@@ -52,7 +51,6 @@ void ActivationSoftmax(float *values, uint16_t size)
             maxVal = values[i];
     }
 
-    // Exponentiate shifted values and sum
     float sum = 0.0f;
     for (uint16_t i = 0; i < size; i++)
     {
@@ -60,7 +58,6 @@ void ActivationSoftmax(float *values, uint16_t size)
         sum += values[i];
     }
 
-    // Normalize
     for (uint16_t i = 0; i < size; i++)
     {
         values[i] /= sum;
@@ -139,7 +136,6 @@ void DenseLayer::FeedForward()
 
 void DenseLayer::CalculateGradients(const float *desiredValues)
 {
-    // for every neuron, sum the layer
     for (uint16_t idx = 0; idx < this->Size; idx++)
     {
         float err = 0.0f;
@@ -239,14 +235,12 @@ void OutputLayer::FeedForward_Softmax()
 
 void OutputLayer::FeedForward()
 {
-    // handle softmax activation:
     if (this->activationKind == ActivationKind::Softmax)
     {
         FeedForward_Softmax();
         return;
     }
 
-    // handle other cases:
     for (uint16_t idx = 0; idx < this->Size; idx++)
     {
         float sum = 0.0f;
@@ -268,12 +262,10 @@ void OutputLayer::CalculateGradients(const float *desiredValues)
 
         if (this->activationKind == ActivationKind::Sigmoid || this->activationKind == ActivationKind::Softmax)
         {
-            // cross entropy with sigmoid/softmax
             gradZ = rawError;
         }
         else
         {
-            // all the other loss
             gradZ = rawError * ActivationDeriv(this->NeuronValues[idx], this->activationKind);
         }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nn/layerData.h"
+#include "layerData.h"
 
 float layer0_weights[8] = {1.694597f, 1.308419f, -1.314386f, -0.903650f, -1.036660f, 2.091955f, -2.517021f, 2.006923f};
 float layer0_bias[4] = {-0.033063f, -0.264372f, 0.208891f, -1.040136f};

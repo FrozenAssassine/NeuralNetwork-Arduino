@@ -46,7 +46,7 @@ for epoch in range(2000):
     loss.backward()
     optimizer.step()
 
-    if epoch % 20 == 0:
+    if epoch % 100 == 0:
         print(f"Epoch {epoch}, Loss: {loss.item()}")
 
 with torch.no_grad():

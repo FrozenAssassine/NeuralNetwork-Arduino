@@ -1,6 +1,6 @@
-#include "nn/layers.h"
-#include "nn/neuralNetwork.h"
 #include <Arduino.h>
+#include <nn/layers.h>
+#include <nn/neuralNetwork.h>
 #include <nn/predictionHelper.h>
 
 void TrainAndTest()

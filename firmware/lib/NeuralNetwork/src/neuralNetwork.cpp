@@ -33,7 +33,6 @@ NeuralNetwork &NeuralNetwork::StackLayer(BaseLayer *layer)
 
 void NeuralNetwork::initInferenceMode()
 {
-    // in inference mode, weights and biases are loaded throught nn_trained.h & errors are not needed
     if (nn_total_layers != this->totalLayers)
     {
         Serial.println("Error: Invalid model layer count");
@@ -67,8 +66,6 @@ void NeuralNetwork::initInferenceMode()
 
 void NeuralNetwork::initTrainingMode()
 {
-    // training mode! Init layers and init weights + bias random for training
-
     for (uint8_t i = 0; i < this->totalLayers; i++)
     {
         BaseLayer *prev = (i == 0) ? nullptr : allLayer[i - 1];
@@ -89,13 +86,11 @@ void NeuralNetwork::Build(bool inferenceOnly)
 
 float *NeuralNetwork::Predict(float *inputs, uint16_t inputLength)
 {
-    // give the input neurons the input values:
     for (uint16_t j = 0; j < inputLength; j++)
     {
         this->allLayer[0]->NeuronValues[j] = inputs[j];
     }
 
-    // Feed forward input values throught the network:
     for (uint8_t j = 1; j < this->totalLayers; j++)
     {
         this->allLayer[j]->FeedForward();
@@ -115,7 +110,6 @@ void NeuralNetwork::Train(float *inputs, float *desired, uint16_t totalItems, ui
         for (uint16_t i = 0; i < totalItems; i++)
         {
 
-            // feed forward the input values:
             for (uint16_t j = 0; j < inputItemCount; j++)
             {
                 this->allLayer[0]->NeuronValues[j] = inputs[i * inputItemCount + j];
@@ -126,16 +120,13 @@ void NeuralNetwork::Train(float *inputs, float *desired, uint16_t totalItems, ui
                 this->allLayer[j]->FeedForward();
             }
 
-            // back propagate the model:
             uint16_t outputSize = this->allLayer[this->totalLayers - 1]->Size;
 
-            // calculate the errors for every layer (back propagete)
             for (uint8_t j = totalLayers; j-- > 0;)
             {
                 this->allLayer[j]->CalculateGradients(&desired[i * outputSize]);
             }
 
-            // update the weights using the calculated errors
             for (uint8_t j = 0; j < this->totalLayers; j++)
             {
                 this->allLayer[j]->UpdateWeights(learningRate);
