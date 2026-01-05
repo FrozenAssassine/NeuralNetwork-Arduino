@@ -118,12 +118,12 @@ void InferenceOnly()
   Serial.println("Testing model inference only (XOR Classification)");
 
   NeuralNetwork *nn = new NeuralNetwork(3);
-
-  nn->LoadTrainedData(nn_layers, nn_total_layers);
-
   nn->StackLayer(new InputLayer(2));
   nn->StackLayer(new DenseLayer(4, ActivationKind::TanH));
   nn->StackLayer(new OutputLayer(2, ActivationKind::Softmax));
+
+  nn->LoadTrainedData(nn_layers, nn_total_layers);
+
   nn->Build(true); // inference only
 
   float inputs[4][2] = {
