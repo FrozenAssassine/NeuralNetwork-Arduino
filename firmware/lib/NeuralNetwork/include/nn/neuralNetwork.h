@@ -19,7 +19,7 @@ public:
     uint8_t totalLayers;
     NeuralNetwork(uint8_t totalLayers);
     ~NeuralNetwork();
-    void Train(float *inputs, float *desired, uint16_t totalItems, uint16_t inputItemCount, uint16_t epochs, float learningRate);
+    void Train(float *inputs, float *desired, uint16_t totalItems, uint16_t epochs, float learningRate);
     NeuralNetwork &StackLayer(BaseLayer *layer);
     void Build(bool inferenceOnly);
     float *Predict(float *inputs);

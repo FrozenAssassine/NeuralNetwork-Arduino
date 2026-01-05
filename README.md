@@ -71,12 +71,12 @@ void TrainAndTest()
       {0, 1},
       {1, 0}};
 
-  nn->Train((float *)inputs, (float *)desired, 4, 2, 220, 0.1);
+  nn->Train((float *)inputs, (float *)desired, 4, 220, 0.1);
 
   Serial.println("Predictions:");
   for (uint8_t i = 0; i < 4; i++)
   {
-    float *pred = nn->Predict(inputs[i], 2);
+    float *pred = nn->Predict(inputs[i]);
     Serial.printf(
         "Input: [%.0f, %.0f] -> Softmax: [%.4f, %.4f] -> Class: %d\n",
         inputs[i][0], inputs[i][1], pred[0], pred[1], ArgMax(pred, 2));
@@ -122,6 +122,7 @@ void InferenceOnly()
   nn->StackLayer(new DenseLayer(4, ActivationKind::TanH));
   nn->StackLayer(new OutputLayer(2, ActivationKind::Softmax));
 
+  //load your weights and biases
   nn->LoadTrainedData(nn_layers, nn_total_layers);
 
   nn->Build(true); // inference only
@@ -135,7 +136,7 @@ void InferenceOnly()
   Serial.println("Predictions:");
   for (uint8_t i = 0; i < 4; i++)
   {
-    float *pred = nn->Predict(inputs[i], 2);
+    float *pred = nn->Predict(inputs[i]);
     Serial.printf(
         "Input: [%.0f, %.0f] -> Softmax: [%.4f, %.4f] -> Class: %d\n",
         inputs[i][0], inputs[i][1], pred[0], pred[1], ArgMax(pred, 2));

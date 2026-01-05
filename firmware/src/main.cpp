@@ -28,7 +28,7 @@ void TrainAndTest()
       {0, 1},
       {1, 0}};
 
-  nn->Train((float *)inputs, (float *)desired, 4, 2, 220, 0.1);
+  nn->Train((float *)inputs, (float *)desired, 4, 220, 0.1);
 
   Serial.println("Predictions:");
   for (uint8_t i = 0; i < 4; i++)

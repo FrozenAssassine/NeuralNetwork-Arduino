@@ -103,7 +103,7 @@ float *NeuralNetwork::Predict(float *inputs)
     return this->allLayer[this->totalLayers - 1]->NeuronValues;
 }
 
-void NeuralNetwork::Train(float *inputs, float *desired, uint16_t totalItems, uint16_t inputItemCount, uint16_t epochs, float learningRate)
+void NeuralNetwork::Train(float *inputs, float *desired, uint16_t totalItems, uint16_t epochs, float learningRate)
 {
     Serial.println("Begin training");
     LossCalculator lossCalc = LossCalculator(this);
@@ -113,10 +113,9 @@ void NeuralNetwork::Train(float *inputs, float *desired, uint16_t totalItems, ui
         lossCalc.NextEpoch();
         for (uint16_t i = 0; i < totalItems; i++)
         {
-
-            for (uint16_t j = 0; j < inputItemCount; j++)
+            for (uint16_t j = 0; j < allLayer[0]->Size; j++)
             {
-                this->allLayer[0]->NeuronValues[j] = inputs[i * inputItemCount + j];
+                this->allLayer[0]->NeuronValues[j] = inputs[i * allLayer[0]->Size + j];
             }
 
             for (uint8_t j = 1; j < this->totalLayers; j++)
