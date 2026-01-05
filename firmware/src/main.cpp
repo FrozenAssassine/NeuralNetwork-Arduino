@@ -33,7 +33,7 @@ void TrainAndTest()
   Serial.println("Predictions:");
   for (uint8_t i = 0; i < 4; i++)
   {
-    float *pred = nn->Predict(inputs[i], 2);
+    float *pred = nn->Predict(inputs[i]);
     Serial.printf(
         "Input: [%.0f, %.0f] -> Softmax: [%.4f, %.4f] -> Class: %d\n",
         inputs[i][0], inputs[i][1], pred[0], pred[1], ArgMax(pred, 2));
@@ -46,11 +46,12 @@ void InferenceOnly()
 
   NeuralNetwork *nn = new NeuralNetwork(3);
 
-  nn->LoadTrainedData(nn_layers, nn_total_layers);
-
   nn->StackLayer(new InputLayer(2));
   nn->StackLayer(new DenseLayer(4, ActivationKind::TanH));
   nn->StackLayer(new OutputLayer(2, ActivationKind::Softmax));
+
+  nn->LoadTrainedData(nn_layers, nn_total_layers);
+
   nn->Build(true); // inference only
 
   float inputs[4][2] = {
@@ -62,7 +63,7 @@ void InferenceOnly()
   Serial.println("Predictions:");
   for (uint8_t i = 0; i < 4; i++)
   {
-    float *pred = nn->Predict(inputs[i], 2);
+    float *pred = nn->Predict(inputs[i]);
     Serial.printf(
         "Input: [%.0f, %.0f] -> Softmax: [%.4f, %.4f] -> Class: %d\n",
         inputs[i][0], inputs[i][1], pred[0], pred[1], ArgMax(pred, 2));
@@ -74,10 +75,8 @@ void setup()
   Serial.begin(115200);
   delay(1000);
 
+  TrainAndTest();
   InferenceOnly();
-  // TrainAndTest();
 }
 
-void loop()
-{
-}
+void loop() {}

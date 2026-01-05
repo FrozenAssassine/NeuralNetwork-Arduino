@@ -87,16 +87,17 @@ void NeuralNetwork::Build(bool inferenceOnly)
         this->initTrainingMode();
 }
 
-float *NeuralNetwork::Predict(float *inputs, uint16_t inputLength)
+float *NeuralNetwork::Predict(float *inputs)
 {
-    for (uint16_t j = 0; j < inputLength; j++)
+    for (uint16_t j = 0; j < this->allLayer[0]->Size; j++)
     {
         this->allLayer[0]->NeuronValues[j] = inputs[j];
     }
 
     for (uint8_t j = 1; j < this->totalLayers; j++)
     {
-        this->allLayer[j]->FeedForward();
+        // feed forward in inference mode:
+        this->allLayer[j]->FeedForward(true);
     }
 
     return this->allLayer[this->totalLayers - 1]->NeuronValues;
@@ -120,7 +121,8 @@ void NeuralNetwork::Train(float *inputs, float *desired, uint16_t totalItems, ui
 
             for (uint8_t j = 1; j < this->totalLayers; j++)
             {
-                this->allLayer[j]->FeedForward();
+                // feedforward in training mode:
+                this->allLayer[j]->FeedForward(false);
             }
 
             uint16_t outputSize = this->allLayer[this->totalLayers - 1]->Size;
@@ -144,6 +146,13 @@ void NeuralNetwork::Train(float *inputs, float *desired, uint16_t totalItems, ui
             Serial.print(epoch);
             lossCalc.PrintLoss();
         }
+    }
+
+    // assign the mutable weights to the actual weights after training for predictions
+    for (int i = 0; i < totalLayers; i++)
+    {
+        allLayer[i]->Weights = allLayer[i]->MutableWeights;
+        allLayer[i]->Biases = allLayer[i]->MutableBiases;
     }
 
     Serial.println("Training Done!");

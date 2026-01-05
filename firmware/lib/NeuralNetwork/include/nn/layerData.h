@@ -4,8 +4,8 @@
 
 struct LayerData
 {
-    float *weights;
-    float *bias;
+    const float *weights;
+    const float *bias;
     uint16_t inputSize;
     uint16_t outputSize;
 };

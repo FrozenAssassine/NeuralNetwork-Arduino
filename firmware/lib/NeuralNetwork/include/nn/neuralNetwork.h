@@ -22,7 +22,7 @@ public:
     void Train(float *inputs, float *desired, uint16_t totalItems, uint16_t inputItemCount, uint16_t epochs, float learningRate);
     NeuralNetwork &StackLayer(BaseLayer *layer);
     void Build(bool inferenceOnly);
-    float *Predict(float *inputs, uint16_t inputLength);
+    float *Predict(float *inputs);
     bool LoadTrainedData(const LayerData *layers, uint8_t layerCount);
 };
 

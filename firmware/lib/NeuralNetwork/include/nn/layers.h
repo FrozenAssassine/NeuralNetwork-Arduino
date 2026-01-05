@@ -22,10 +22,14 @@ class NeuralNetwork;
 class BaseLayer
 {
 public:
-    float *Biases;
+    const float *Biases;  // for inference only
+    const float *Weights; // for inference only
+
+    float *MutableWeights; // for training mode
+    float *MutableBiases;  // for training mode
+
     float *NeuronValues;
     float *Errors;
-    float *Weights;
     uint16_t Size;
     BaseLayer *PreviousLayer;
     BaseLayer *NextLayer;
@@ -34,11 +38,11 @@ public:
     BaseLayer();
     virtual ~BaseLayer();
 
-    virtual void FeedForward() = 0;
+    virtual void FeedForward(bool inferenceOnly = true) = 0;
     virtual void CalculateGradients(const float *desiredValues) = 0;
     virtual void UpdateWeights(float learningRate) = 0;
     virtual void InitLayer(NeuralNetwork *nn, uint16_t size, BaseLayer *previous, BaseLayer *next, bool inferenceOnly = false) = 0;
-    virtual void LoadData(float *weights, float *biases) = 0;
+    virtual void LoadData(const float *weights, const float *biases) = 0;
 };
 
 class DenseLayer : public BaseLayer
@@ -47,10 +51,10 @@ public:
     DenseLayer(uint16_t size, ActivationKind kind);
     ~DenseLayer();
     void InitLayer(NeuralNetwork *nn, uint16_t size, BaseLayer *previous, BaseLayer *next, bool inferenceOnly = false) override;
-    void FeedForward() override;
+    void FeedForward(bool inferenceOnly = true) override;
     void CalculateGradients(const float *desiredValues);
     void UpdateWeights(float learningRate);
-    void LoadData(float *weights, float *biases);
+    void LoadData(const float *weights, const float *biases);
 };
 
 class InputLayer : public BaseLayer
@@ -59,10 +63,10 @@ public:
     InputLayer(uint16_t size);
     ~InputLayer();
     void InitLayer(NeuralNetwork *nn, uint16_t size, BaseLayer *previous, BaseLayer *next, bool inferenceOnly = false) override;
-    void FeedForward() override;
+    void FeedForward(bool inferenceOnly = true) override;
     void CalculateGradients(const float *desiredValues);
     void UpdateWeights(float learningRate);
-    void LoadData(float *weights, float *biases);
+    void LoadData(const float *weights, const float *biases);
 };
 
 class OutputLayer : public BaseLayer
@@ -71,13 +75,13 @@ public:
     OutputLayer(uint16_t size, ActivationKind kind);
     ~OutputLayer();
     void InitLayer(NeuralNetwork *nn, uint16_t size, BaseLayer *previous, BaseLayer *next, bool inferenceOnly = false) override;
-    void FeedForward() override;
+    void FeedForward(bool inferenceOnly = true) override;
     void CalculateGradients(const float *desiredValues);
     void UpdateWeights(float learningRate);
-    void LoadData(float *weights, float *biases);
+    void LoadData(const float *weights, const float *biases);
 
 private:
-    void FeedForward_Softmax();
+    void FeedForward_Softmax(bool inferenceOnly = true);
 };
 
 #endif

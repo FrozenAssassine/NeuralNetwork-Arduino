@@ -2,16 +2,15 @@
 
 #include "nn/layerData.h"
 
-// Example arrays (small XOR-like model)
-static float layer0_weights[8] = {1.694597f, 1.308419f, -1.314386f, -0.903650f, -1.036660f, 2.091955f, -2.517021f, 2.006923f};
-static float layer0_bias[4] = {-0.033063f, -0.264372f, 0.208891f, -1.040136f};
+const float layer0_weights[8] = {1.430434f, -0.973696f, 2.027066f, 1.679277f, 1.048579f, 1.684631f, -0.269726f, 0.690415f};
+const float layer0_bias[4] = {-1.282252f, -2.940798f, -0.513053f, -0.578465f};
 
-static float layer1_weights[8] = {-1.449604f, 0.621033f, 1.519490f, -1.582430f, 0.827401f, -0.810482f, -1.936075f, 1.971920f};
-static float layer1_bias[2] = {-0.410137f, -0.222768f};
+const float layer1_weights[8] = {-1.153850f, 1.595637f, -1.419836f, -0.087913f, 1.227274f, -1.626652f, 1.463847f, 1.003036f};
+const float layer1_bias[2] = {0.497864f, -0.567415f};
 
-static const LayerData nn_layers[] = {
+const LayerData nn_layers[] = {
     {nullptr, nullptr, 0, 2},
     {layer0_weights, layer0_bias, 2, 4},
     {layer1_weights, layer1_bias, 4, 2}};
 
-static const uint8_t nn_total_layers = 3;
+const uint8_t nn_total_layers = 3;

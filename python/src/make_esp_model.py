@@ -10,7 +10,7 @@ def flatten_tensor(tensor):
 
 def array_to_c(name, array):
     arr_str = ", ".join([f"{v:.6f}f" for v in array])
-    return f"float {name}[{len(array)}] = {{ {arr_str} }};\n"
+    return f"const float {name}[{len(array)}] = {{ {arr_str} }};\n"
 
 
 def make_header_file(model_file, header_file):

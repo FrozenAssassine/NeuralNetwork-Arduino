@@ -92,6 +92,8 @@ BaseLayer::~BaseLayer()
     delete[] NeuronValues;
     delete[] Errors;
     delete[] Weights;
+    delete[] MutableWeights;
+    delete[] MutableBiases;
 }
 
 /// DENSE LAYER
@@ -111,15 +113,16 @@ void DenseLayer::InitLayer(NeuralNetwork *nn, uint16_t size, BaseLayer *previous
 
     if (!inferenceOnly)
     {
-        this->Biases = new float[size];
-        this->Weights = new float[size * previous->Size];
+        this->MutableBiases = new float[size];
+        this->MutableWeights = new float[size * previous->Size];
         this->Errors = new float[size];
-        FillRandom(this->Biases, size);
-        XavierInitializeWeights(this->Weights, size * previous->Size, nn->allLayer[0]->Size, nn->allLayer[nn->totalLayers - 1]->Size);
+
+        FillRandom(this->MutableBiases, size);
+        XavierInitializeWeights(this->MutableWeights, size * previous->Size, nn->allLayer[0]->Size, nn->allLayer[nn->totalLayers - 1]->Size);
     }
 }
 
-void DenseLayer::FeedForward()
+void DenseLayer::FeedForward(bool inferenceOnly)
 {
     for (uint16_t idx = 0; idx < this->Size; idx++)
     {
@@ -127,10 +130,10 @@ void DenseLayer::FeedForward()
         uint32_t index = idx * this->PreviousLayer->Size;
         for (uint16_t j = 0; j < this->PreviousLayer->Size; j++)
         {
-            sum += this->PreviousLayer->NeuronValues[j] * this->Weights[index + j];
+            sum += this->PreviousLayer->NeuronValues[j] * (inferenceOnly ? this->Weights[index + j] : this->MutableWeights[index + j]);
         }
 
-        this->NeuronValues[idx] = Activation(sum + this->Biases[idx], this->activationKind);
+        this->NeuronValues[idx] = Activation(sum + (inferenceOnly ? this->Biases[idx] : this->MutableBiases[idx]), this->activationKind);
     }
 }
 
@@ -142,7 +145,7 @@ void DenseLayer::CalculateGradients(const float *desiredValues)
 
         for (uint16_t j = 0; j < this->NextLayer->Size; j++)
         {
-            err += (this->NextLayer->Errors[j] * this->NextLayer->Weights[j * this->Size + idx]);
+            err += (this->NextLayer->Errors[j] * this->NextLayer->MutableWeights[j * this->Size + idx]);
         }
 
         float error = err * ActivationDeriv(this->NeuronValues[idx], this->activationKind);
@@ -159,14 +162,14 @@ void DenseLayer::UpdateWeights(float learningRate)
 
         for (uint16_t j = 0; j < this->PreviousLayer->Size; j++)
         {
-            this->Weights[index + j] += error * this->PreviousLayer->NeuronValues[j];
+            this->MutableWeights[index + j] += error * this->PreviousLayer->NeuronValues[j];
         }
 
-        this->Biases[idx] += error;
+        this->MutableBiases[idx] += error;
     }
 }
 
-void DenseLayer::LoadData(float *w, float *b)
+void DenseLayer::LoadData(const float *w, const float *b)
 {
     this->Weights = w;
     this->Biases = b;
@@ -187,10 +190,10 @@ void InputLayer::InitLayer(NeuralNetwork *nn, uint16_t size, BaseLayer *previous
     this->PreviousLayer = previous;
     this->NextLayer = next;
 }
-void InputLayer::FeedForward() {}
+void InputLayer::FeedForward(bool inferenceOnly) {}
 void InputLayer::CalculateGradients(const float *desiredValues) {}
 void InputLayer::UpdateWeights(float learningRate) {}
-void InputLayer::LoadData(float *w, float *b) {}
+void InputLayer::LoadData(const float *w, const float *b) {}
 
 // OUTPUT LAYER
 OutputLayer::OutputLayer(uint16_t size, ActivationKind activationKind)
@@ -209,15 +212,15 @@ void OutputLayer::InitLayer(NeuralNetwork *nn, uint16_t size, BaseLayer *previou
 
     if (!inferenceOnly)
     {
-        this->Biases = new float[size];
         this->Errors = new float[size];
-        this->Weights = new float[size * previous->Size];
-        XavierInitializeWeights(this->Weights, size * previous->Size, nn->allLayer[0]->Size, nn->allLayer[nn->totalLayers - 1]->Size);
-        FillRandom(this->Biases, size);
+        this->MutableBiases = new float[size];
+        this->MutableWeights = new float[size * previous->Size];
+        XavierInitializeWeights(this->MutableWeights, size * previous->Size, nn->allLayer[0]->Size, nn->allLayer[nn->totalLayers - 1]->Size);
+        FillRandom(this->MutableBiases, size);
     }
 }
 
-void OutputLayer::FeedForward_Softmax()
+void OutputLayer::FeedForward_Softmax(bool inferenceOnly)
 {
     for (uint16_t idx = 0; idx < this->Size; idx++)
     {
@@ -225,19 +228,19 @@ void OutputLayer::FeedForward_Softmax()
         uint32_t weightIndex = idx * this->PreviousLayer->Size;
         for (uint16_t j = 0; j < this->PreviousLayer->Size; j++)
         {
-            sum += this->PreviousLayer->NeuronValues[j] * this->Weights[weightIndex + j];
+            sum += this->PreviousLayer->NeuronValues[j] * (inferenceOnly ? this->Weights[weightIndex + j] : this->MutableWeights[weightIndex + j]);
         }
 
-        this->NeuronValues[idx] = sum + this->Biases[idx];
+        this->NeuronValues[idx] = sum + (inferenceOnly ? this->Biases[idx] : this->MutableBiases[idx]);
     }
     ActivationSoftmax(this->NeuronValues, this->Size);
 }
 
-void OutputLayer::FeedForward()
+void OutputLayer::FeedForward(bool inferenceOnly)
 {
     if (this->activationKind == ActivationKind::Softmax)
     {
-        FeedForward_Softmax();
+        FeedForward_Softmax(inferenceOnly);
         return;
     }
 
@@ -247,9 +250,9 @@ void OutputLayer::FeedForward()
         uint32_t weightIndex = idx * this->PreviousLayer->Size;
         for (uint16_t j = 0; j < this->PreviousLayer->Size; j++)
         {
-            sum += this->PreviousLayer->NeuronValues[j] * this->Weights[weightIndex + j];
+            sum += this->PreviousLayer->NeuronValues[j] * (inferenceOnly ? this->Weights[weightIndex + j] : this->MutableWeights[weightIndex + j]);
         }
-        this->NeuronValues[idx] = Activation(sum + this->Biases[idx], this->activationKind);
+        this->NeuronValues[idx] = Activation(sum + (inferenceOnly ? this->Biases[idx] : this->MutableBiases[idx]), this->activationKind);
     }
 }
 
@@ -283,14 +286,14 @@ void OutputLayer::UpdateWeights(float learningRate)
 
         for (uint16_t j = 0; j < this->PreviousLayer->Size; j++)
         {
-            this->Weights[weightIndex + j] += error * this->PreviousLayer->NeuronValues[j];
+            this->MutableWeights[weightIndex + j] += error * this->PreviousLayer->NeuronValues[j];
         }
 
-        this->Biases[idx] += error;
+        this->MutableBiases[idx] += error;
     }
 }
 
-void OutputLayer::LoadData(float *w, float *b)
+void OutputLayer::LoadData(const float *w, const float *b)
 {
     this->Weights = w;
     this->Biases = b;
